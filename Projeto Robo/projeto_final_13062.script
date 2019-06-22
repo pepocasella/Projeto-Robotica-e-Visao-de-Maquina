@@ -1,0 +1,400 @@
+def projeto_final_13062():
+  modbus_add_signal("192.168.12.80", 255, 0, 2, "pickx", False)
+  modbus_set_signal_update_frequency("pickx", 1)
+  modbus_add_signal("192.168.12.80", 255, 1, 2, "picky", False)
+  modbus_set_signal_update_frequency("picky", 1)
+  modbus_add_signal("192.168.12.80", 255, 12, 2, "theta_pick", False)
+  modbus_set_signal_update_frequency("theta_pick", 1)
+  modbus_add_signal("192.168.12.80", 255, 6, 2, "placex", False)
+  modbus_set_signal_update_frequency("placex", 1)
+  modbus_add_signal("192.168.12.80", 255, 7, 2, "placey", False)
+  modbus_set_signal_update_frequency("placey", 1)
+  modbus_add_signal("192.168.12.80", 255, 13, 2, "theta_place", False)
+  modbus_set_signal_update_frequency("theta_place", 1)
+  modbus_add_signal("192.168.12.80", 255, 0, 0, "robot_turn_inpu", False)
+  modbus_set_signal_update_frequency("robot_turn_inpu", 1)
+  modbus_add_signal("192.168.12.80", 255, 1, 0, "is_double", False)
+  modbus_set_signal_update_frequency("is_double", 1)
+  modbus_add_signal("192.168.12.80", 255, 2, 0, "pass_modbus", False)
+  modbus_set_signal_update_frequency("pass_modbus", 1)
+  modbus_add_signal("192.168.12.80", 255, 2, 2, "pickz", False)
+  modbus_set_signal_update_frequency("pickz", 1)
+  modbus_add_signal("192.168.12.80", 255, 3, 2, "pickrotx", False)
+  modbus_set_signal_update_frequency("pickrotx", 1)
+  modbus_add_signal("192.168.12.80", 255, 4, 2, "pickroty", False)
+  modbus_set_signal_update_frequency("pickroty", 1)
+  modbus_add_signal("192.168.12.80", 255, 5, 2, "pickrotz", False)
+  modbus_set_signal_update_frequency("pickrotz", 1)
+  modbus_add_signal("192.168.12.80", 255, 8, 2, "placez", False)
+  modbus_set_signal_update_frequency("placez", 1)
+  modbus_add_signal("192.168.12.80", 255, 9, 2, "placerotx", False)
+  modbus_set_signal_update_frequency("placerotx", 1)
+  modbus_add_signal("192.168.12.80", 255, 10, 2, "placeroty", False)
+  modbus_set_signal_update_frequency("placeroty", 1)
+  modbus_add_signal("192.168.12.80", 255, 11, 2, "placerotz", False)
+  modbus_set_signal_update_frequency("placerotz", 1)
+  modbus_add_signal("192.168.12.80", 255, 0, 1, "my_turn", False)
+  modbus_set_signal_update_frequency("my_turn", 10)
+  modbus_add_signal("192.168.12.80", 255, 3, 0, "sinal_enviado", False)
+  modbus_set_signal_update_frequency("sinal_enviado", 10)
+  modbus_add_signal("192.168.12.80", 255, 4, 0, "game_over", False)
+  modbus_set_signal_update_frequency("game_over", 10)
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 0)
+  set_tool_analog_input_domain(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_tool_voltage(24)
+  set_input_actions_to_default()
+  modbus_set_runstate_dependent_choice("my_turn",0)
+  set_tcp(p[-0.00749,0.009,0.11883,2.219616620365537,2.2215596546022067,0.001624933609343285])
+  set_payload(0.71, [2.0E-4, 0.002, 0.041299999999999996])
+  set_gravity([0.0, 0.0, 9.82])
+  global game_over_var_1=  False  
+  global piece_picked=  False  
+  global piece_placed=  True  
+  global var_init=  False  
+  global waiting_player=  True  
+  def wait_player():
+    if (waiting == 1  and  pass_test ==   True  ):
+      sleep(0.02)
+      force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -30.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.15, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+      sleep(2.0)
+      end_force_mode()
+      stopl(5.0)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]+0.05
+      movej(tcp_pose)
+      sleep(0.02)
+      force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -30.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.15, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+      sleep(2.0)
+      end_force_mode()
+      stopl(5.0)
+      movej(phome)
+      sleep(0.01)
+      global waiting_player=  True  
+      global waiting=0
+    else:
+      movej(phome)
+      sleep(0.01)
+      global waiting_player=  True  
+    end
+  end
+  def pick_hand():
+    global waiting_player=  False  
+    movel(phand)
+    set_tool_digital_out(0, False)
+    set_tool_digital_out(1, True)
+    sleep(0.2)
+    movej(pose_add(p[ppickx,ppicky,z0_pick,0,0,0],p[0.3154571800810026,-0.6023796534713493,-7.68043546946101E-5,0.006972221372570851,-0.007718431454154209,1.5715947128066983]))
+    global leitura_test=pose_add(p[ppickx,ppicky,z0_pick,0,0,0],p[0.3154571800810026,-0.6023796534713493,-7.68043546946101E-5,0.006972221372570851,-0.007718431454154209,1.5715947128066983])
+    sleep(0.1)
+    if (bigdouble ==   False  ):
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=actual_pose[5]+picktheta
+      movej(actual_pose)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]-zpick
+      movej(tcp_pose)
+      set_tool_digital_out(1, False)
+      set_tool_digital_out(0, True)
+      sleep(0.5)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]+zpick
+      movej(tcp_pose)
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=0
+      movej(actual_pose)
+      movel(phand)
+      global piece_picked=  True  
+    else:
+      movej(pose_add(p[ppickxmod,ppickymod,z0_pick,0,0,0],p[0.3154571800810026,-0.6023796534713493,-7.68043546946101E-5,0.006972221372570851,-0.007718431454154209,1.5715947128066983]))
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=actual_pose[5]+picktheta+1.57
+      movej(actual_pose)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]-zpick
+      movej(tcp_pose)
+      sleep(0.1)
+      set_tool_digital_out(1, False)
+      set_tool_digital_out(0, True)
+      sleep(0.3)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]+zpick
+      movej(tcp_pose)
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=0
+      movej(actual_pose)
+      movej(phand)
+      global piece_picked=  True  
+    end
+  end
+  def place_piece():
+    global piece_picked=  False  
+    movej(pplay)
+    sleep(0.1)
+    global actual_pose=get_actual_joint_positions()
+    actual_pose[5]=0
+    movej(actual_pose)
+    movej(pose_add(p[pplacex,pplacey,z0_place,0,0,0],p[0.5996988595029098,0.12972997551948376,0.15001441677261707,0.008403706578116956,0.0014302106692040567,1.624888251807432]))
+    global leitura_test=pose_add(p[pplacex,pplacey,z0_place,0,0,0],p[0.5996988595029098,0.12972997551948376,0.15001441677261707,0.008403706578116956,0.0014302106692040567,1.624888251807432])
+    sleep(0.1)
+    if (bigdouble ==   False  ):
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=actual_pose[5]+placetheta
+      sleep(0.1)
+      movej(actual_pose)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]-zpick
+      movej(tcp_pose)
+      set_tool_digital_out(0, False)
+      set_tool_digital_out(1, True)
+      sleep(0.2)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]+3*zpick
+      movej(tcp_pose)
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=0
+      movej(actual_pose)
+    else:
+      movej(pose_add(p[pplacexmod,pplaceymod,z0_place,0,0,0],p[0.5996988595029098,0.12972997551948376,0.15001441677261707,0.008403706578116956,0.0014302106692040567,1.624888251807432]))
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=actual_pose[5]+placetheta+1.57
+      movej(actual_pose)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]-zpick
+      movej(tcp_pose)
+      sleep(0.1)
+      set_tool_digital_out(0, False)
+      set_tool_digital_out(1, True)
+      sleep(0.3)
+      global tcp_pose=get_actual_tcp_pose()
+      tcp_pose[2]=tcp_pose[2]+3*zpick
+      movej(tcp_pose)
+      global actual_pose=get_actual_joint_positions()
+      actual_pose[5]=0
+      movej(actual_pose)
+    end
+    sleep(0.2)
+    global actual_pose=get_actual_joint_positions()
+    actual_pose[5]=0
+    movej(actual_pose)
+    movel(pplay)
+    set_tool_digital_out(1, False)
+    set_tool_digital_out(0, True)
+    global game_over_var_1=  True  
+    global piece_placed=  True  
+    sleep(0.2)
+  end
+  $ 2 "BeforeStart"
+  $ 3 "cria_variaveis_pos"
+  $ 4 "phome≔Base"
+  global phome=p[0.0,0.0,0.0,0.0,0.0,0.0]
+  $ 5 "phand≔Base"
+  global phand=p[0.0,0.0,0.0,0.0,0.0,0.0]
+  $ 6 "pplay≔Base"
+  global pplay=p[0.0,0.0,0.0,0.0,0.0,0.0]
+  $ 7 "teach_mode()"
+  teach_mode()
+  $ 8 "ppickx≔0"
+  global ppickx=0
+  $ 9 "ppicky≔0"
+  global ppicky=0
+  $ 10 "pplacex≔0"
+  global pplacex=0
+  $ 11 "pplacey≔0"
+  global pplacey=0
+  $ 12 "ppickxmod≔0"
+  global ppickxmod=0
+  $ 13 "ppickymod≔0"
+  global ppickymod=0
+  $ 14 "actual_pose≔[0,0,0,0,0,0]"
+  global actual_pose=[0,0,0,0,0,0]
+  $ 15 "picktheta≔0"
+  global picktheta=0
+  $ 16 "placetheta≔0"
+  global placetheta=0
+  $ 17 "pplacexmod≔0"
+  global pplacexmod=0
+  $ 18 "pplaceymod≔0"
+  global pplaceymod=0
+  $ 19 "tcp_pose≔Base"
+  global tcp_pose=p[0.0,0.0,0.0,0.0,0.0,0.0]
+  $ 20 "z0_place≔-0.228"
+  global z0_place=-0.228
+  $ 21 "waiting≔0"
+  global waiting=0
+  $ 22 "zpick≔0.0095"
+  global zpick=0.0095
+  $ 23 "z0_pick≔-0.078"
+  global z0_pick=-0.078
+  $ 24 "robot_turn≔ False "
+  global robot_turn=  False  
+  $ 25 "bigdouble≔ False "
+  global bigdouble=  False  
+  $ 26 "pass≔ False "
+  global pass=  False  
+  $ 27 "sinal_enviado≔ False "
+  global sinal_enviado=  False  
+  $ 28 "game_over≔ False "
+  global game_over=  False  
+  $ 29 "PCam_board≔Cam_Pose_Board"
+  global PCam_board=p[0.5996988595029098,0.12972997551948376,0.15001441677261707,0.008403706578116956,0.0014302106692040567,1.624888251807432]
+  $ 30 "PCam_Hand≔Cam_Pose_Hand"
+  global PCam_Hand=p[0.3154571800810026,-0.6023796534713493,-7.68043546946101E-5,0.006972221372570851,-0.007718431454154209,1.5715947128066983]
+  $ 31 "write_port_bit(21, False )"
+  write_port_bit(21,  False  )
+  $ 32 "define_pos_padroes"
+  $ 33 "Popup"
+  popup("Mova o robo para a posicao home e clique em continuar.", "Message", False, False, blocking=True)
+  $ 34 "Wait: 0.5"
+  sleep(0.5)
+  $ 35 "Folder"
+  $ 36 "end_teach_mode()"
+  end_teach_mode()
+  $ 37 "actual_pose≔get_actual_joint_positions()"
+  global actual_pose=get_actual_joint_positions()
+  $ 38 "actual_pose[5]=0"
+  actual_pose[5]=0
+  $ 39 "movej(actual_pose)"
+  movej(actual_pose)
+  $ 40 "teach_mode()"
+  teach_mode()
+  $ 41 "phome=get_actual_tcp_pose()"
+  phome=get_actual_tcp_pose()
+  $ 42 "Popup"
+  popup("mova o robo para a posicao hand e clique em continuar.", "Message", False, False, blocking=True)
+  $ 43 "phand=get_actual_tcp_pose()"
+  phand=get_actual_tcp_pose()
+  $ 44 "Popup"
+  popup("Mova o robo para a posicao play e clique em continuar", "Message", False, False, blocking=True)
+  $ 45 "pplay=get_actual_tcp_pose()"
+  pplay=get_actual_tcp_pose()
+  $ 46 "end_teach_mode()"
+  end_teach_mode()
+  $ 47 "movej(phome)"
+  movej(phome)
+  $ 198 "Thread_1"
+  thread Thread_1():
+    while (True):
+      def converte_num(num):
+       if num >=32767:
+        num=num-65536
+       end
+       return num
+      end
+      pass=read_port_bit(18)
+      game_over=read_port_bit(19)
+      
+      #registradores
+      ppickx = converte_num(read_port_register(128))/1000
+      ppicky=converte_num(read_port_register(129))/1000
+      pplacex=converte_num(read_port_register(130))/1000
+      pplacey=converte_num(read_port_register(131))/1000
+      picktheta=converte_num(read_port_register(132))/1000
+      placetheta=converte_num(read_port_register(133))/1000
+      
+      #booleanos
+      bigdouble=read_port_bit(17)
+      sinal_enviado=read_port_bit(20)
+      ppickxmod=ppickx-0.02*cos(picktheta)
+      ppickymod=ppicky+0.02*sin(picktheta)
+      pplacexmod=pplacex-0.02*cos(placetheta)
+      pplaceymod=pplacey+0.02*sin(placetheta)
+      if (get_standard_digital_in(1) ==   True    and  piece_placed ==   True  ):
+        global piece_placed=  False  
+        write_port_bit(21,  True  )
+        while (not(read_port_bit(20))):
+          sync()
+        end
+        write_port_bit(21,  False  )
+        sleep(2.0)
+        pass=read_port_bit(18)
+        game_over=read_port_bit(19)
+        
+        #registradores
+        ppickx = converte_num(read_port_register(128))/1000
+        ppicky=converte_num(read_port_register(129))/1000
+        pplacex=converte_num(read_port_register(130))/1000
+        pplacey=converte_num(read_port_register(131))/1000
+        picktheta=converte_num(read_port_register(132))/1000
+        placetheta=converte_num(read_port_register(133))/1000
+        
+        #booleanos
+        bigdouble=read_port_bit(17)
+        sinal_enviado=read_port_bit(20)
+        ppickxmod=ppickx-0.02*cos(picktheta)
+        ppickymod=ppicky+0.02*sin(picktheta)
+        pplacexmod=pplacex-0.02*cos(placetheta)
+        pplaceymod=pplacey+0.02*sin(placetheta)
+        global game_over_var_1=  False  
+        sleep(0.01)
+        global robot_turn=  True  
+      end
+      sleep(0.01)
+      if (game_over ==   True    and  game_over_var_1 ==   True  ):
+        popup("FIM DE JOGO!!", "Message", False, False, blocking=False)
+        halt
+      end
+    end
+  end
+  threadId_Thread_1 = run Thread_1()
+  while (True):
+    $ 48 "Robot Program"
+    $ 49 "wait_init"
+    $ 50 "If var_init≟ False "
+    if (var_init ==   False  ):
+      $ 51 "Wait: 0.02"
+      sleep(0.02)
+    end
+    $ 52 "Wait: 0.01"
+    sleep(0.01)
+    $ 53 "var_init≔ True "
+    global var_init=  True  
+    $ 54 "If pass≟ False "
+    if (pass ==   False  ):
+      $ 55 "waiting≔1"
+      global waiting=1
+      $ 56 "pass_test≔ False "
+      global pass_test=  False  
+      $ 57 "Main"
+      $ 58 "If waiting_player≟ True "
+      if (waiting_player ==   True  ):
+        $ 59 "If robot_turn≟ True "
+        if (robot_turn ==   True  ):
+          $ 60 "Call pick_hand"
+          pick_hand()
+        else:
+          $ 61 "Else"
+          $ 62 "Wait: 0.01"
+          sleep(0.01)
+        end
+      else:
+        $ 63 "ElseIf piece_picked≟ True "
+        if (piece_picked ==   True  ):
+          $ 64 "Call place_piece"
+          place_piece()
+        else:
+          $ 65 "ElseIf piece_placed≟ True "
+          if (piece_placed ==   True  ):
+            $ 66 "Call wait_player"
+            wait_player()
+            $ 67 "robot_turn≔ False "
+            global robot_turn=  False  
+          end
+        end
+      end
+    else:
+      $ 68 "Else"
+      $ 69 "Wait: 0.01"
+      sleep(0.01)
+      $ 70 "pass_test≔ True "
+      global pass_test=  True  
+      $ 71 "Call wait_player"
+      wait_player()
+      $ 72 "piece_placed≔ True "
+      global piece_placed=  True  
+    end
+  end
+end

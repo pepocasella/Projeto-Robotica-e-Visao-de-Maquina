@@ -1,0 +1,217 @@
+ Program
+   Init Variables
+   BeforeStart
+     cria_variaveis_pos
+       phome≔Base
+       phand≔Base
+       pplay≔Base
+       teach_mode()
+       ppickx≔0
+       ppicky≔0
+       pplacex≔0
+       pplacey≔0
+       ppickxmod≔0
+       ppickymod≔0
+       actual_pose≔[0,0,0,0,0,0]
+       picktheta≔0
+       placetheta≔0
+       pplacexmod≔0
+       pplaceymod≔0
+       tcp_pose≔Base
+       z0_place≔-0.228
+       waiting≔0
+       zpick≔0.0095
+       z0_pick≔-0.078
+       robot_turn≔ False 
+       bigdouble≔ False 
+       pass≔ False 
+       sinal_enviado≔ False 
+       game_over≔ False 
+       PCam_board≔Cam_Pose_Board
+       PCam_Hand≔Cam_Pose_Hand
+       write_port_bit(21, False )
+     define_pos_padroes
+       Popup
+       Wait: 0.5
+       Folder
+         end_teach_mode()
+         actual_pose≔get_actual_joint_positions()
+         actual_pose[5]=0
+         movej(actual_pose)
+       teach_mode()
+       phome=get_actual_tcp_pose()
+       Popup
+       phand=get_actual_tcp_pose()
+       Popup
+       pplay=get_actual_tcp_pose()
+     end_teach_mode()
+     movej(phome)
+   Robot Program
+     wait_init
+       If var_init≟ False 
+         Wait: 0.02
+       Wait: 0.01
+       var_init≔ True 
+     If pass≟ False 
+       waiting≔1
+       pass_test≔ False 
+       Main
+         If waiting_player≟ True 
+           If robot_turn≟ True 
+             Call pick_hand
+           Else
+             Wait: 0.01
+         ElseIf piece_picked≟ True 
+           Call place_piece
+         ElseIf piece_placed≟ True 
+           Call wait_player
+           robot_turn≔ False 
+     Else
+       Wait: 0.01
+       pass_test≔ True 
+       Call wait_player
+       piece_placed≔ True 
+   wait_player
+     If waiting≟1 and pass_test≟ True 
+       Force
+         Wait: 2.0
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]+0.05
+       movej(tcp_pose)
+       Force
+         Wait: 2.0
+       movej(phome)
+       Wait: 0.01
+       waiting_player≔ True 
+       waiting≔0
+     Else
+       movej(phome)
+       Wait: 0.01
+       waiting_player≔ True 
+   pick_hand
+     waiting_player≔ False 
+     movel(phand)
+     Set TO[0]=Desligar
+     Set TO[1]=Ligar
+     Wait: 0.2
+     movej(pose_add(p[ppickx,ppicky,z0_pick,0,0,0],Cam_Pose_Hand))
+     leitura_test≔pose_add(p[ppickx,ppicky,z0_pick,0,0,0],Cam_Pose_Hand)
+     Wait: 0.1
+     If bigdouble≟ False 
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=actual_pose[5]+picktheta
+       movej(actual_pose)
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]-zpick
+       movej(tcp_pose)
+       Set TO[1]=Desligar
+       Set TO[0]=Ligar
+       Wait: 0.5
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]+zpick
+       movej(tcp_pose)
+       Folder
+         actual_pose≔get_actual_joint_positions()
+         actual_pose[5]=0
+         movej(actual_pose)
+       movel(phand)
+       piece_picked≔ True 
+     Else
+       movej(pose_add(p[ppickxmod,ppickymod,z0_pick,0,0,0],Cam_Pose_Hand))
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=actual_pose[5]+picktheta+1.57
+       movej(actual_pose)
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]-zpick
+       movej(tcp_pose)
+       Wait: 0.1
+       Set TO[1]=Desligar
+       Set TO[0]=Ligar
+       Wait: 0.3
+       Folder
+         tcp_pose≔get_actual_tcp_pose()
+         tcp_pose[2]=tcp_pose[2]+zpick
+         movej(tcp_pose)
+         actual_pose≔get_actual_joint_positions()
+         actual_pose[5]=0
+         movej(actual_pose)
+       movej(phand)
+       piece_picked≔ True 
+   place_piece
+     piece_picked≔ False 
+     movej(pplay)
+     Wait: 0.1
+     Folder
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=0
+       movej(actual_pose)
+     movej(pose_add(p[pplacex,pplacey,z0_place,0,0,0],Cam_Pose_Board))
+     leitura_test≔pose_add(p[pplacex,pplacey,z0_place,0,0,0],Cam_Pose_Board)
+     Wait: 0.1
+     If bigdouble≟ False 
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=actual_pose[5]+placetheta
+       Wait: 0.1
+       movej(actual_pose)
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]-zpick
+       movej(tcp_pose)
+       Set TO[0]=Desligar
+       Set TO[1]=Ligar
+       Wait: 0.2
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]+3*zpick
+       movej(tcp_pose)
+       Folder
+         actual_pose≔get_actual_joint_positions()
+         actual_pose[5]=0
+         movej(actual_pose)
+     Else
+       movej(pose_add(p[pplacexmod,pplaceymod,z0_place,0,0,0],Cam_Pose_Board))
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=actual_pose[5]+placetheta+1.57
+       movej(actual_pose)
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]-zpick
+       movej(tcp_pose)
+       Wait: 0.1
+       Set TO[0]=Desligar
+       Set TO[1]=Ligar
+       Wait: 0.3
+       tcp_pose≔get_actual_tcp_pose()
+       tcp_pose[2]=tcp_pose[2]+3*zpick
+       movej(tcp_pose)
+       Folder
+         actual_pose≔get_actual_joint_positions()
+         actual_pose[5]=0
+         movej(actual_pose)
+     Wait: 0.2
+     Folder
+       actual_pose≔get_actual_joint_positions()
+       actual_pose[5]=0
+       movej(actual_pose)
+     movel(pplay)
+     Set TO[1]=Desligar
+     Set TO[0]=Ligar
+     game_over_var_1≔ True 
+     piece_placed≔ True 
+     Wait: 0.2
+   Thread_1
+     Folder
+       Script: converte_num.script
+       Script: pick_values_modbus_check.script_bak
+       Script: calcula_tcp.script_bak
+       If digital_in[1]≟ True  and piece_placed≟ True 
+         piece_placed≔ False 
+         write_port_bit(21, True )
+         Wait read_port_bit(20)
+         write_port_bit(21, False )
+         Wait: 2.0
+         Script: pick_values_modbus_check.script_bak
+         Script: calcula_tcp.script_bak
+         game_over_var_1≔ False 
+         Wait: 0.01
+         robot_turn≔ True 
+       Wait: 0.01
+       If game_over≟ True  and game_over_var_1≟ True 
+         Popup
